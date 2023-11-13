@@ -247,44 +247,32 @@ Object subclass: #TusLibrosClientRestInterface
 	poolDictionaries: ''
 	category: 'TusLibrosREST'!
 
-!TusLibrosClientRestInterface methodsFor: 'requests' stamp: 'NR 6/13/2022 07:05:17'!
+!TusLibrosClientRestInterface methodsFor: 'requests' stamp: 'MH 11/13/2023 12:59:59'!
 add: quantity of: bookIsbn toCartIdentifiedAs: cartId
 
-	| fieldDict resp |
+	| fieldDict |
 
 	fieldDict := Dictionary newFromPairs: {'cartId'. cartId. 'bookIsbn'. bookIsbn. 'bookQuantity'. quantity}.		
 		
-	resp := WebClient htmlSubmit: (self url,'/addToCart') fields: fieldDict.
-		
-	resp isSuccess 
-		ifTrue:[^(WebUtils jsonDecode: ((resp content) readStream))]
-		ifFalse:[^self error: resp content]! !
+	^WebClient htmlSubmit: (self url,'/addToCart') fields: fieldDict! !
 
-!TusLibrosClientRestInterface methodsFor: 'requests' stamp: 'NR 6/9/2022 08:11:20'!
+!TusLibrosClientRestInterface methodsFor: 'requests' stamp: 'MH 11/13/2023 12:45:19'!
 createCartFor: aUser password: aPassword
 
-	| fieldDict resp |
+	| fieldDict |
 	
 	fieldDict := Dictionary newFromPairs: {'clientId'. aUser. 'password'. aPassword}.		
 	
-	resp := WebClient htmlSubmit: (self url,'/createCart') fields: fieldDict.
-		
-	resp isSuccess 
-		ifTrue:[^(WebUtils jsonDecode: ((resp content) readStream))] 
-		ifFalse:[^self error: resp content]! !
+	^WebClient htmlSubmit: (self url,'/createCart') fields: fieldDict! !
 
-!TusLibrosClientRestInterface methodsFor: 'requests' stamp: 'NR 6/9/2022 08:11:24'!
+!TusLibrosClientRestInterface methodsFor: 'requests' stamp: 'MH 11/13/2023 13:00:12'!
 listCart: cartId
 
-	| fieldDict resp |
+	| fieldDict |
 	
 	fieldDict := Dictionary newFromPairs: {'cartId'. cartId. }.		
 	
-	resp := WebClient htmlSubmit: (self url,'/listCart') fields: fieldDict.
-		
-	resp isSuccess 
-		ifTrue:[^(WebUtils jsonDecode: ((resp content) readStream)) asOrderedCollection] 
-		ifFalse:[^self error: resp content]! !
+	^WebClient htmlSubmit: (self url,'/listCart') fields: fieldDict! !
 
 
 !TusLibrosClientRestInterface methodsFor: 'initialization' stamp: 'NR 6/9/2022 08:11:33'!
@@ -296,6 +284,18 @@ port
 url
 
 	^'http://localhost:', self port asString! !
+
+
+!TusLibrosClientRestInterface methodsFor: 'async communication' stamp: 'MH 11/13/2023 13:07:36'!
+get: aClosureReturningAWebResponse onEnd: aClosureThatReceivesAResponse onError: aClosureThatReceivesAnError
+
+	[ | resp |
+		resp := aClosureReturningAWebResponse value.
+		
+		resp isSuccess 
+			ifTrue: [ aClosureThatReceivesAResponse value: (WebUtils jsonDecode: ((resp content) readStream)) ]
+			ifFalse: [aClosureThatReceivesAnError value: resp content]
+	] fork! !
 
 
 !classDefinition: #TusLibrosClientTestWindowModel category: 'TusLibrosREST'!
@@ -365,7 +365,7 @@ cartIdsIndex: anIndex
 	! !
 
 
-!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/12/2023 23:03:47'!
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/13/2023 13:04:07'!
 addToCart
 
 	| cartId bookIsbn |
@@ -374,36 +374,34 @@ addToCart
 		cartId := self selectedCartId.
 		bookIsbn := self selectedBook.
 		
-		self
-			runAsync: [
+		restInterface
+			get: [
 				restInterface add: 1 of: bookIsbn toCartIdentifiedAs: cartId
 			]
-			onEndRun: [
+			onEnd: [ :aResponse |
 				self triggerEvent: #bookAddedToCart withArguments: (Array with: bookIsbn with: cartId)
 			]
-			onErrorRun: [ :anError |
+			onError: [ :anError |
 				self triggerEvent: #errorArrived with: anError
 			]
 	]! !
 
-!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/12/2023 22:57:06'!
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/13/2023 13:04:07'!
 createCart
 
-	| newCartId |
-	
-	self
-		runAsync: [
-			newCartId := restInterface createCartFor: 'hernan' password: 'smalltalk'
+	restInterface
+		get: [
+			restInterface createCartFor: 'hernan' password: 'smalltalk'
 		]
-		onEndRun: [
-			cartIds add: newCartId.
+		onEnd: [ :aResponse |
+			cartIds add: aResponse.
 			self triggerEvent: #newCartIdArrived
 		]
-		onErrorRun: [ :anError |
+		onError: [ :anError |
 			self triggerEvent: #errorArrived with: anError
 		]! !
 
-!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/12/2023 23:00:16'!
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/13/2023 13:04:07'!
 listCart
 
 	| cartId |
@@ -411,14 +409,15 @@ listCart
 	(self isCartIdSelected) ifTrue:[
 		cartId := self selectedCartId.
 		
-		self
-			runAsync: [
-				currentSelectedCartContent := restInterface listCart: cartId
+		restInterface
+			get: [
+				restInterface listCart: cartId
 			]
-			onEndRun: [
+			onEnd: [ :aResponse |
+				currentSelectedCartContent := aResponse.
 				self triggerEvent: #newCurrentSelectedCartContentArrived with: cartId
 			]
-			onErrorRun: [ :anError |
+			onError: [ :anError |
 				self triggerEvent: #errorArrived with: anError
 			]
 	].! !
@@ -441,21 +440,6 @@ initialize
 	selectedCartIdsIndex := 0.
 	selectedBookCatalogIndex := 0.
 	restInterface := TusLibrosClientRestInterface new.! !
-
-
-!TusLibrosClientTestWindowModel methodsFor: 'async communication' stamp: 'MH 11/12/2023 23:02:46'!
-runAsync: aClosureToRunAsync onEndRun: aClosureToRunOnEnd onErrorRun: aClosureToRunOnError
-
-	| closureToRun |
-	
-	closureToRun := aClosureToRunOnEnd.
-
-	[
-		[ aClosureToRunAsync value ]
-			on: Error
-			do: [ :anError | closureToRun := [ aClosureToRunOnError value: anError ] ].
-		closureToRun value.
-	] fork! !
 
 
 !classDefinition: #TusLibrosServerRestInterface category: 'TusLibrosREST'!
