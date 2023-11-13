@@ -753,26 +753,22 @@ salesBook
 	^ salesBook! !
 
 
-!TusLibrosSystemFacade methodsFor: 'private' stamp: 'MH 11/11/2023 17:13:47'!
+!TusLibrosSystemFacade methodsFor: 'private' stamp: 'MH 11/12/2023 23:27:16'!
 bookPerformance: anItem
 
 	| bookPerformance totalMoney totalSales |
 
 	bookPerformance := Dictionary new.
-
-	self runInParallel: (OrderedCollection
-		with: [ totalSales := self totalSalesOf: anItem ]
-		with: [ totalMoney := self totalMoneyRaisedBy: anItem ]
-	).
+	
+	self
+		runInParallel: [ totalSales := self totalSalesOf: anItem ]
+		and: [ totalMoney := self totalMoneyRaisedBy: anItem ].
 
 	bookPerformance at: 'quantity' put: totalSales.
 	bookPerformance at: 'total' put: totalMoney.
 	bookPerformance at: 'summary' put: anItem,' was selled ',totalSales asString, ' times and raised a total amount of money equal to: ', totalMoney asString.
 	
-	^bookPerformance
-	
-
-! !
+	^bookPerformance! !
 
 !TusLibrosSystemFacade methodsFor: 'private' stamp: 'HAW 7/23/2020 15:34:54'!
 list: aSale on: quantitiesByItem 
@@ -789,26 +785,22 @@ salesDoneBy: aUser
 	"Esto es un indicio de que por ahi conviene empezar a pensar en modelar un SaleBook - Hernan"
 	^ salesBook select: [ :aSale | aSale wasDoneBy: aUser ]! !
 
-!TusLibrosSystemFacade methodsFor: 'private' stamp: 'MH 11/11/2023 17:13:47'!
+!TusLibrosSystemFacade methodsFor: 'private' stamp: 'MH 11/12/2023 23:28:06'!
 storePerformance
 
 	| totalMoney totalSales performance |
 	
 	performance := Dictionary new.
 	
-	self runInParallel: (OrderedCollection
-		with: [ totalSales := self totalSales. ]
-		with: [ totalMoney := self totalMoneyRaised. ]
-	).
+	self
+		runInParallel: [ totalSales := self totalSales ]
+		and: [ totalMoney := self totalMoneyRaised ].
 
 	performance at: 'quantity' put: totalSales.
 	performance at: 'total' put: totalMoney.
 	performance at: 'summary' put: 'The store selled a total of ',totalSales asString, ' books and raised a total amount of money equal to: ', totalMoney asString.
 	
-	^performance
-	
-
-! !
+	^performance! !
 
 !TusLibrosSystemFacade methodsFor: 'private' stamp: 'NR 6/12/2022 21:34:25'!
 totalMoneyRaised
@@ -873,18 +865,17 @@ initializeAuthenticatingWith: aValidUsersAndPasswords
 	lastId := 0.! !
 
 
-!TusLibrosSystemFacade methodsFor: 'performance improvements' stamp: 'MH 11/11/2023 17:13:47'!
-runInParallel: aCollectionOfClosures
+!TusLibrosSystemFacade methodsFor: 'performance improvements' stamp: 'MH 11/12/2023 23:26:23'!
+runInParallel: aClosure and: anotherClosure
 
-	| readySemaphore |
+	| semaphore |
 
-	readySemaphore := Semaphore new.
+	semaphore := Semaphore new.
 
-	aCollectionOfClosures do: [ :aClosure |
-		[ aClosure value. readySemaphore signal] fork
-	].
+	[ aClosure value. semaphore signal] fork.
+	anotherClosure value.
 
-	readySemaphore wait.! !
+	semaphore wait! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 

@@ -365,7 +365,7 @@ cartIdsIndex: anIndex
 	! !
 
 
-!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 18:22:12'!
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/12/2023 23:03:47'!
 addToCart
 
 	| cartId bookIsbn |
@@ -376,36 +376,34 @@ addToCart
 		
 		self
 			runAsync: [
-				[ restInterface add: 1 of: bookIsbn toCartIdentifiedAs: cartId. ]
-					on: Error
-					do: [ :anError |
-						self triggerEvent: #errorArrived with: anError
-					]
+				restInterface add: 1 of: bookIsbn toCartIdentifiedAs: cartId
 			]
 			onEndRun: [
 				self triggerEvent: #bookAddedToCart withArguments: (Array with: bookIsbn with: cartId)
 			]
+			onErrorRun: [ :anError |
+				self triggerEvent: #errorArrived with: anError
+			]
 	]! !
 
-!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 18:20:05'!
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/12/2023 22:57:06'!
 createCart
 
 	| newCartId |
 	
 	self
 		runAsync: [
-			[ newCartId := restInterface createCartFor: 'hernan' password: 'smalltalk'. ]
-				on: Error
-				do: [ :anError |
-					self triggerEvent: #errorArrived with: anError
-				]
+			newCartId := restInterface createCartFor: 'hernan' password: 'smalltalk'
 		]
 		onEndRun: [
 			cartIds add: newCartId.
 			self triggerEvent: #newCartIdArrived
+		]
+		onErrorRun: [ :anError |
+			self triggerEvent: #errorArrived with: anError
 		]! !
 
-!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 18:23:58'!
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/12/2023 23:00:16'!
 listCart
 
 	| cartId |
@@ -415,14 +413,13 @@ listCart
 		
 		self
 			runAsync: [
-				[ currentSelectedCartContent := restInterface listCart: cartId. ]
-					on: Error
-					do: [ :anError |
-						self triggerEvent: #errorArrived with: anError
-					]
+				currentSelectedCartContent := restInterface listCart: cartId
 			]
 			onEndRun: [
 				self triggerEvent: #newCurrentSelectedCartContentArrived with: cartId
+			]
+			onErrorRun: [ :anError |
+				self triggerEvent: #errorArrived with: anError
 			]
 	].! !
 
@@ -446,10 +443,19 @@ initialize
 	restInterface := TusLibrosClientRestInterface new.! !
 
 
-!TusLibrosClientTestWindowModel methodsFor: 'as yet unclassified' stamp: 'MH 11/11/2023 17:29:42'!
-runAsync: aClosure1 onEndRun: aClosure2
+!TusLibrosClientTestWindowModel methodsFor: 'async communication' stamp: 'MH 11/12/2023 23:02:46'!
+runAsync: aClosureToRunAsync onEndRun: aClosureToRunOnEnd onErrorRun: aClosureToRunOnError
 
-	[ aClosure1 value. aClosure2 value ] fork! !
+	| closureToRun |
+	
+	closureToRun := aClosureToRunOnEnd.
+
+	[
+		[ aClosureToRunAsync value ]
+			on: Error
+			do: [ :anError | closureToRun := [ aClosureToRunOnError value: anError ] ].
+		closureToRun value.
+	] fork! !
 
 
 !classDefinition: #TusLibrosServerRestInterface category: 'TusLibrosREST'!
