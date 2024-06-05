@@ -1,0 +1,1600 @@
+
+
+----QUIT----(13 August 2023 19:14:09) CuisUniversity-5981.image priorSource: 5713367!
+
+----STARTUP---- (13 August 2023 19:14:10) as /Users/hernan/Documents/Cuis/5.0-64Bits/Cuis-University-Installer/CuisUniversity-5981.image!
+
+
+----QUIT----(13 August 2023 19:14:10) CuisUniversity-5981.image priorSource: 10197065!
+
+----STARTUP---- (11 November 2023 16:36:04) as C:\Users\Mati\Downloads\windows64\windows64\CuisUniversity-5981.image!
+
+
+----End fileIn of C:\Users\Mati\Downloads\windows64\windows64\TusLibros-Model Ejercicio it4.st----!
+
+----End fileIn of C:\Users\Mati\Downloads\windows64\windows64\TusLibros-Tests Ejercicio it4.st----!
+
+----End fileIn of C:\Users\Mati\Downloads\windows64\windows64\TusLibrosREST Ejercicio it4.st----!
+
+!testRun: #TusLibrosSystemFacadeTest #test20BookPerformanceShouldNotTakeTooLong stamp: 'MH 11/11/2023 16:39:47'!
+FAILURE!
+
+!testRun: #TusLibrosSystemFacadeTest #test20BookPerformanceShouldNotTakeTooLong stamp: 'MH 11/11/2023 16:39:49'!
+FAILURE!
+!TusLibrosSystemFacade methodsFor: 'private' stamp: 'MH 11/11/2023 16:46:09' prior: 50651140!
+bookPerformance: anItem
+
+	| bookPerformance totalMoney totalSales |
+
+	bookPerformance := Dictionary new.
+	
+	totalSales := self totalSalesOf: anItem.
+	totalMoney := self totalMoneyRaisedBy: anItem.
+	
+	bookPerformance at: 'quantity' put: totalSales.
+	bookPerformance at: 'total' put: totalMoney.
+	bookPerformance at: 'summary' put: anItem,' was selled ',totalSales asString, ' times and raised a total amount of money equal to: ', totalMoney asString.
+	
+	^bookPerformance
+	
+
+! !
+!TusLibrosSystemFacade methodsFor: 'private' stamp: 'MH 11/11/2023 16:56:20' prior: 50653168!
+bookPerformance: anItem
+
+	| bookPerformance totalMoney totalSales readySemaphore1 readySemaphore2 |
+
+	bookPerformance := Dictionary new.
+	
+	readySemaphore1 := Semaphore new.
+	readySemaphore2 := Semaphore new.
+	
+	[ totalSales := self totalSalesOf: anItem. readySemaphore1 signal ] fork.
+	[ totalMoney := self totalMoneyRaisedBy: anItem. readySemaphore2 signal ] fork.
+	
+	readySemaphore1 wait.
+	readySemaphore2 wait.
+	
+	bookPerformance at: 'quantity' put: totalSales.
+	bookPerformance at: 'total' put: totalMoney.
+	bookPerformance at: 'summary' put: anItem,' was selled ',totalSales asString, ' times and raised a total amount of money equal to: ', totalMoney asString.
+	
+	^bookPerformance
+	
+
+! !
+
+!testRun: #TusLibrosSystemFacadeTest #test20BookPerformanceShouldNotTakeTooLong stamp: 'MH 11/11/2023 16:56:41'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test21StorePerformanceShouldNotTakeTooLong stamp: 'MH 11/11/2023 16:56:47'!
+FAILURE!
+
+!testRun: #TusLibrosSystemFacadeTest #test21StorePerformanceShouldNotTakeTooLong stamp: 'MH 11/11/2023 16:56:49'!
+FAILURE!
+!TusLibrosSystemFacade methodsFor: 'nil' stamp: 'MH 11/11/2023 16:58:20'!
+runAsync: aClosure andSignal: aSemaphore
+
+	[ aClosure value. aSemaphore signal] fork! !
+!TusLibrosSystemFacade methodsFor: 'as yet unclassified' stamp: 'MH 11/11/2023 16:59:46' prior: 50653222!
+runAsync: aClosure andSignal: aSemaphore
+
+	[ aClosure value. aSemaphore signal] fork! !
+!TusLibrosSystemFacade methodsFor: 'private' stamp: 'MH 11/11/2023 17:00:07' prior: 50653186!
+bookPerformance: anItem
+
+	| bookPerformance totalMoney totalSales readySemaphore1 readySemaphore2 |
+
+	bookPerformance := Dictionary new.
+	
+	readySemaphore1 := Semaphore new.
+	readySemaphore2 := Semaphore new.
+	
+	self runAsync: [ totalSales := self totalSalesOf: anItem ] andSignal: readySemaphore1.
+	self runAsync: [ totalMoney := self totalMoneyRaisedBy: anItem ] andSignal: readySemaphore2.
+	
+	readySemaphore1 wait.
+	readySemaphore2 wait.
+	
+	bookPerformance at: 'quantity' put: totalSales.
+	bookPerformance at: 'total' put: totalMoney.
+	bookPerformance at: 'summary' put: anItem,' was selled ',totalSales asString, ' times and raised a total amount of money equal to: ', totalMoney asString.
+	
+	^bookPerformance
+	
+
+! !
+
+!testRun: #TusLibrosSystemFacadeTest #test20BookPerformanceShouldNotTakeTooLong stamp: 'MH 11/11/2023 17:00:54'!
+PASSED!
+!TusLibrosSystemFacade methodsFor: 'private' stamp: 'MH 11/11/2023 17:01:07' prior: 50653235!
+bookPerformance: anItem
+
+	| bookPerformance totalMoney totalSales readySemaphore |
+
+	bookPerformance := Dictionary new.
+	
+	readySemaphore := Semaphore new.
+	
+	self runAsync: [ totalSales := self totalSalesOf: anItem ] andSignal: readySemaphore.
+	self runAsync: [ totalMoney := self totalMoneyRaisedBy: anItem ] andSignal: readySemaphore.
+
+	readySemaphore wait.
+
+	bookPerformance at: 'quantity' put: totalSales.
+	bookPerformance at: 'total' put: totalMoney.
+	bookPerformance at: 'summary' put: anItem,' was selled ',totalSales asString, ' times and raised a total amount of money equal to: ', totalMoney asString.
+	
+	^bookPerformance
+	
+
+! !
+
+!testRun: #TusLibrosSystemFacadeTest #test20BookPerformanceShouldNotTakeTooLong stamp: 'MH 11/11/2023 17:01:18'!
+PASSED!
+!TusLibrosSystemFacade methodsFor: 'private' stamp: 'MH 11/11/2023 17:03:25' prior: 50651181!
+storePerformance
+
+	| totalMoney totalSales performance readySemaphore |
+	
+	performance := Dictionary new.
+	
+	readySemaphore := Semaphore new.
+
+	self runAsync: [ totalSales := self totalSales. ] andSignal: readySemaphore.
+	self runAsync: [ totalMoney := self totalMoneyRaised. ] andSignal: readySemaphore.
+
+	readySemaphore wait.
+	
+	performance at: 'quantity' put: totalSales.
+	performance at: 'total' put: totalMoney.
+	performance at: 'summary' put: 'The store selled a total of ',totalSales asString, ' books and raised a total amount of money equal to: ', totalMoney asString.
+	
+	^performance
+	
+
+! !
+
+!testRun: #TusLibrosSystemFacadeTest #test21StorePerformanceShouldNotTakeTooLong stamp: 'MH 11/11/2023 17:03:31'!
+PASSED!
+!TusLibrosSystemFacade methodsFor: 'as yet unclassified' stamp: 'MH 11/11/2023 17:05:22' prior: 50653229!
+runAsync: aCollectionOfClosures andSignal: aSemaphore
+
+	aCollectionOfClosures do: [ :aClosure |
+		[ aClosure value. aSemaphore signal] fork
+	].! !
+!TusLibrosSystemFacade methodsFor: 'as yet unclassified' stamp: 'MH 11/11/2023 17:06:35'!
+runAsync: aCollectionOfClosures
+
+	| readySemaphore |
+	readySemaphore := Semaphore new.
+
+	aCollectionOfClosures do: [ :aClosure |
+		[ aClosure value. readySemaphore signal] fork
+	].
+
+	readySemaphore wait.! !
+!TusLibrosSystemFacade methodsFor: 'as yet unclassified' stamp: 'MH 11/11/2023 17:06:40' prior: 50653326!
+runAsync: aCollectionOfClosures
+
+	| readySemaphore |
+
+	readySemaphore := Semaphore new.
+
+	aCollectionOfClosures do: [ :aClosure |
+		[ aClosure value. readySemaphore signal] fork
+	].
+
+	readySemaphore wait.! !
+!TusLibrosSystemFacade methodsFor: 'private' stamp: 'MH 11/11/2023 17:08:51' prior: 50653292!
+storePerformance
+
+	| totalMoney totalSales performance |
+	
+	performance := Dictionary new.
+	
+	self runAsync: (OrderedCollection
+		with: [ totalSales := self totalSales. ]
+		with: [ totalMoney := self totalMoneyRaised. ]
+	).
+
+	performance at: 'quantity' put: totalSales.
+	performance at: 'total' put: totalMoney.
+	performance at: 'summary' put: 'The store selled a total of ',totalSales asString, ' books and raised a total amount of money equal to: ', totalMoney asString.
+	
+	^performance
+	
+
+! !
+
+!testRun: #TusLibrosSystemFacadeTest #test20BookPerformanceShouldNotTakeTooLong stamp: 'MH 11/11/2023 17:09:24'!
+ERROR!
+
+!testRun: #TusLibrosSystemFacadeTest #test20BookPerformanceShouldNotTakeTooLong stamp: 'MH 11/11/2023 17:09:24'!
+ERROR!
+!TusLibrosSystemFacade methodsFor: 'private' stamp: 'MH 11/11/2023 17:10:15' prior: 50653265!
+bookPerformance: anItem
+
+	| bookPerformance totalMoney totalSales |
+
+	bookPerformance := Dictionary new.
+
+	self runAsync: (OrderedCollection
+		with: [ totalSales := self totalSalesOf: anItem ]
+		with: [ totalMoney := self totalMoneyRaisedBy: anItem ]
+	).
+
+	bookPerformance at: 'quantity' put: totalSales.
+	bookPerformance at: 'total' put: totalMoney.
+	bookPerformance at: 'summary' put: anItem,' was selled ',totalSales asString, ' times and raised a total amount of money equal to: ', totalMoney asString.
+	
+	^bookPerformance
+	
+
+! !
+
+!testRun: #TusLibrosSystemFacadeTest #test20BookPerformanceShouldNotTakeTooLong stamp: 'MH 11/11/2023 17:10:21'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test21StorePerformanceShouldNotTakeTooLong stamp: 'MH 11/11/2023 17:10:24'!
+PASSED!
+
+!methodRemoval: TusLibrosSystemFacade #runAsync:andSignal: stamp: 'MH 11/11/2023 17:10:52'!
+runAsync: aCollectionOfClosures andSignal: aSemaphore
+
+	aCollectionOfClosures do: [ :aClosure |
+		[ aClosure value. aSemaphore signal] fork
+	].!
+!TusLibrosSystemFacade methodsFor: 'as yet unclassified' stamp: 'MH 11/11/2023 17:12:04'!
+parallelize: aCollectionOfClosures
+
+	| readySemaphore |
+
+	readySemaphore := Semaphore new.
+
+	aCollectionOfClosures do: [ :aClosure |
+		[ aClosure value. readySemaphore signal] fork
+	].
+
+	readySemaphore wait.! !
+!TusLibrosSystemFacade methodsFor: 'as yet unclassified' stamp: 'MH 11/11/2023 17:12:04' prior: 50653372!
+bookPerformance: anItem
+
+	| bookPerformance totalMoney totalSales |
+
+	bookPerformance := Dictionary new.
+
+	self parallelize: (OrderedCollection
+		with: [ totalSales := self totalSalesOf: anItem ]
+		with: [ totalMoney := self totalMoneyRaisedBy: anItem ]
+	).
+
+	bookPerformance at: 'quantity' put: totalSales.
+	bookPerformance at: 'total' put: totalMoney.
+	bookPerformance at: 'summary' put: anItem,' was selled ',totalSales asString, ' times and raised a total amount of money equal to: ', totalMoney asString.
+	
+	^bookPerformance
+	
+
+! !
+!TusLibrosSystemFacade methodsFor: 'as yet unclassified' stamp: 'MH 11/11/2023 17:12:04' prior: 50653346!
+storePerformance
+
+	| totalMoney totalSales performance |
+	
+	performance := Dictionary new.
+	
+	self parallelize: (OrderedCollection
+		with: [ totalSales := self totalSales. ]
+		with: [ totalMoney := self totalMoneyRaised. ]
+	).
+
+	performance at: 'quantity' put: totalSales.
+	performance at: 'total' put: totalMoney.
+	performance at: 'summary' put: 'The store selled a total of ',totalSales asString, ' books and raised a total amount of money equal to: ', totalMoney asString.
+	
+	^performance
+	
+
+! !
+
+!methodRemoval: TusLibrosSystemFacade #runAsync: stamp: 'MH 11/11/2023 17:12:04'!
+runAsync: aCollectionOfClosures
+
+	| readySemaphore |
+
+	readySemaphore := Semaphore new.
+
+	aCollectionOfClosures do: [ :aClosure |
+		[ aClosure value. readySemaphore signal] fork
+	].
+
+	readySemaphore wait.!
+!TusLibrosSystemFacade methodsFor: 'as yet unclassified' stamp: 'MH 11/11/2023 17:13:47'!
+runInParallel: aCollectionOfClosures
+
+	| readySemaphore |
+
+	readySemaphore := Semaphore new.
+
+	aCollectionOfClosures do: [ :aClosure |
+		[ aClosure value. readySemaphore signal] fork
+	].
+
+	readySemaphore wait.! !
+!TusLibrosSystemFacade methodsFor: 'as yet unclassified' stamp: 'MH 11/11/2023 17:13:47' prior: 50653438!
+storePerformance
+
+	| totalMoney totalSales performance |
+	
+	performance := Dictionary new.
+	
+	self runInParallel: (OrderedCollection
+		with: [ totalSales := self totalSales. ]
+		with: [ totalMoney := self totalMoneyRaised. ]
+	).
+
+	performance at: 'quantity' put: totalSales.
+	performance at: 'total' put: totalMoney.
+	performance at: 'summary' put: 'The store selled a total of ',totalSales asString, ' books and raised a total amount of money equal to: ', totalMoney asString.
+	
+	^performance
+	
+
+! !
+!TusLibrosSystemFacade methodsFor: 'as yet unclassified' stamp: 'MH 11/11/2023 17:13:47' prior: 50653417!
+bookPerformance: anItem
+
+	| bookPerformance totalMoney totalSales |
+
+	bookPerformance := Dictionary new.
+
+	self runInParallel: (OrderedCollection
+		with: [ totalSales := self totalSalesOf: anItem ]
+		with: [ totalMoney := self totalMoneyRaisedBy: anItem ]
+	).
+
+	bookPerformance at: 'quantity' put: totalSales.
+	bookPerformance at: 'total' put: totalMoney.
+	bookPerformance at: 'summary' put: anItem,' was selled ',totalSales asString, ' times and raised a total amount of money equal to: ', totalMoney asString.
+	
+	^bookPerformance
+	
+
+! !
+
+!methodRemoval: TusLibrosSystemFacade #parallelize: stamp: 'MH 11/11/2023 17:13:47'!
+parallelize: aCollectionOfClosures
+
+	| readySemaphore |
+
+	readySemaphore := Semaphore new.
+
+	aCollectionOfClosures do: [ :aClosure |
+		[ aClosure value. readySemaphore signal] fork
+	].
+
+	readySemaphore wait.!
+
+!testRun: #TusLibrosSystemFacadeTest #test20BookPerformanceShouldNotTakeTooLong stamp: 'MH 11/11/2023 17:14:05'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test21StorePerformanceShouldNotTakeTooLong stamp: 'MH 11/11/2023 17:14:08'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test04CanAddItemsToACreatedCart stamp: 'MH 11/11/2023 17:14:15'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test05CanNotAddItemToNotCreatedCart stamp: 'MH 11/11/2023 17:14:15'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test06CanNotAddItemNotSellByTheStore stamp: 'MH 11/11/2023 17:14:15'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test17CanNotAddToCartWhenSessionIsExpired stamp: 'MH 11/11/2023 17:14:15'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test20BookPerformanceShouldNotTakeTooLong stamp: 'MH 11/11/2023 17:14:18'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test21StorePerformanceShouldNotTakeTooLong stamp: 'MH 11/11/2023 17:14:19'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test14ListPurchasesIncludesBoughtItems stamp: 'MH 11/11/2023 17:14:20'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test15CanNotListPurchasesOfInvalidCustomer stamp: 'MH 11/11/2023 17:14:20'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test16CanNotListPurchasesOfValidCustomerWithInvalidPassword stamp: 'MH 11/11/2023 17:14:20'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test01CanCreateCartWithValidUserAndPassword stamp: 'MH 11/11/2023 17:14:22'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test02CanNotCreateCartWithInvalidUser stamp: 'MH 11/11/2023 17:14:22'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test03CanNotCreateCartWithInvalidPassword stamp: 'MH 11/11/2023 17:14:22'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test10CheckOutReturnsTransactionIdAndImpactsCustomerPurchases stamp: 'MH 11/11/2023 17:14:24'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test10_1_CanNotCheckoutAnAlreadyCheckedOutCart stamp: 'MH 11/11/2023 17:14:24'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test11CanNotCheckoutANotCreatedCart stamp: 'MH 11/11/2023 17:14:24'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test12CanNotCheckoutAnEmptyCart stamp: 'MH 11/11/2023 17:14:24'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test13CanNotCheckoutWithAnExpiredCreditCard stamp: 'MH 11/11/2023 17:14:24'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test19CanNotCheckOutCartWhenSessionIsExpired stamp: 'MH 11/11/2023 17:14:24'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test08CanNotListCartOfInvalidCartId stamp: 'MH 11/11/2023 17:14:26'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test09ListCartReturnsTheRightNumberOfItems stamp: 'MH 11/11/2023 17:14:26'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test18CanNotListCartWhenSessionIsExpired stamp: 'MH 11/11/2023 17:14:26'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test01CanCreateCartWithValidUserAndPassword stamp: 'MH 11/11/2023 17:14:31'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test02CanNotCreateCartWithInvalidUser stamp: 'MH 11/11/2023 17:14:31'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test03CanNotCreateCartWithInvalidPassword stamp: 'MH 11/11/2023 17:14:31'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test04CanAddItemsToACreatedCart stamp: 'MH 11/11/2023 17:14:31'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test05CanNotAddItemToNotCreatedCart stamp: 'MH 11/11/2023 17:14:31'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test06CanNotAddItemNotSellByTheStore stamp: 'MH 11/11/2023 17:14:31'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test08CanNotListCartOfInvalidCartId stamp: 'MH 11/11/2023 17:14:31'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test09ListCartReturnsTheRightNumberOfItems stamp: 'MH 11/11/2023 17:14:31'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test10CheckOutReturnsTransactionIdAndImpactsCustomerPurchases stamp: 'MH 11/11/2023 17:14:31'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test10_1_CanNotCheckoutAnAlreadyCheckedOutCart stamp: 'MH 11/11/2023 17:14:31'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test11CanNotCheckoutANotCreatedCart stamp: 'MH 11/11/2023 17:14:31'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test12CanNotCheckoutAnEmptyCart stamp: 'MH 11/11/2023 17:14:31'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test13CanNotCheckoutWithAnExpiredCreditCard stamp: 'MH 11/11/2023 17:14:31'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test14ListPurchasesIncludesBoughtItems stamp: 'MH 11/11/2023 17:14:31'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test15CanNotListPurchasesOfInvalidCustomer stamp: 'MH 11/11/2023 17:14:31'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test16CanNotListPurchasesOfValidCustomerWithInvalidPassword stamp: 'MH 11/11/2023 17:14:31'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test17CanNotAddToCartWhenSessionIsExpired stamp: 'MH 11/11/2023 17:14:31'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test18CanNotListCartWhenSessionIsExpired stamp: 'MH 11/11/2023 17:14:31'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test19CanNotCheckOutCartWhenSessionIsExpired stamp: 'MH 11/11/2023 17:14:31'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test20BookPerformanceShouldNotTakeTooLong stamp: 'MH 11/11/2023 17:14:32'!
+PASSED!
+
+!testRun: #TusLibrosSystemFacadeTest #test21StorePerformanceShouldNotTakeTooLong stamp: 'MH 11/11/2023 17:14:33'!
+PASSED!
+
+----SNAPSHOT----(11 November 2023 17:15:50) CuisUniversity-5981.image priorSource: 10197292!
+
+----End fileIn of C:\Users\Mati\Downloads\windows64\windows64\Packages\System\Collections-CompactArrays.pck.st----!
+
+----End fileIn of C:\Users\Mati\Downloads\windows64\windows64\Packages\Features\Compression.pck.st----!
+
+----End fileIn of C:\Users\Mati\Downloads\windows64\windows64\Packages\Features\Sound.pck.st----!
+
+----End fileIn of C:\Users\Mati\Downloads\windows64\windows64\Packages\Features\Cryptography-DigitalSignatures.pck.st----!
+
+----End fileIn of C:\Users\Mati\Downloads\windows64\windows64\Packages\Features\Identities-UUID.pck.st----!
+
+----End fileIn of C:\Users\Mati\Downloads\windows64\windows64\Packages\System\Network-Kernel.pck.st----!
+
+----End fileIn of C:\Users\Mati\Downloads\windows64\windows64\WebClient.pck.st----!
+
+TusLibrosServerRestInterface installForDefaultSystem!
+
+TusLibrosServerRestInterface installForDefaultSystem!
+
+WebServer reset!
+
+TusLibrosClientTestWindow open!
+
+WebServer reset!
+
+TusLibrosServerRestInterface installForDefaultSystem!
+
+----QUIT----(11 November 2023 17:21:01) CuisUniversity-5981.image priorSource: 10305310!
+
+----STARTUP---- (11 November 2023 17:21:06) as C:\Users\Mati\Downloads\windows64\windows64\CuisUniversity-5981.image!
+
+
+TusLibrosServerRestInterface installForDefaultSystem!
+
+TusLibrosClientTestWindow open!
+!TusLibrosClientTestWindowModel methodsFor: 'nil' stamp: 'MH 11/11/2023 17:29:42'!
+runAsync: aClosure1 onEndRun: aClosure2
+
+	[ aClosure1 value. aClosure2 value ] fork! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 17:30:21' prior: 50652873!
+createCart
+
+	| newCartId |
+	
+	self
+		runAsync: [ newCartId := restInterface createCartFor: 'hernan' password: 'smalltalk'. ]
+		onEndRun: [
+			cartIds add: newCartId.
+			self triggerEvent: #newCartIdArrived
+		]! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 17:32:36' prior: 50652860!
+addToCart
+
+	| cartId bookIsbn |
+
+	(self areCartIdAndBookSelected) ifTrue:[
+		cartId := self selectedCartId.
+		bookIsbn := self selectedBook.
+		
+		self
+			runAsync: [ restInterface add: 1 of: bookIsbn toCartIdentifiedAs: cartId. ]
+			onEndRun: [
+				self triggerEvent: #bookAddedToCart withArguments: (Array with: bookIsbn with: cartId)
+			]
+	]! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 17:33:09' prior: 50652882!
+listCart
+
+	| cartId |
+	
+	(self isCartIdSelected) ifTrue:[
+		cartId := self selectedCartId.
+		
+		self
+			runAsync: [ currentSelectedCartContent := restInterface listCart: cartId. ]
+			onEndRun: [
+				self triggerEvent: #newCurrentSelectedCartContentArrived with: cartId
+			]
+	].! !
+!TusLibrosClientTestWindowModel methodsFor: 'testing' stamp: 'MH 11/11/2023 17:37:29' prior: 50652818!
+isCartIdSelected
+	^true.
+	"^selectedCartIdsIndex ~= 0"! !
+!TusLibrosClientTestWindowModel methodsFor: 'testing' stamp: 'MH 11/11/2023 17:38:00' prior: 50690457!
+isCartIdSelected
+	^selectedCartIdsIndex ~= 0! !
+!TusLibrosClientTestWindowModel methodsFor: 'testing' stamp: 'MH 11/11/2023 17:38:16' prior: 50652812!
+areCartIdAndBookSelected
+	^true
+	"^selectedCartIdsIndex  ~= 0 and: [selectedBookCatalogIndex  ~= 0]"! !
+!TusLibrosClientTestWindowModel methodsFor: 'testing' stamp: 'MH 11/11/2023 17:38:34' prior: 50690468!
+areCartIdAndBookSelected
+
+	^selectedCartIdsIndex  ~= 0 and: [selectedBookCatalogIndex  ~= 0]! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 17:40:00' prior: 50690419!
+createCart
+
+	| newCartId |
+	
+	self
+		runAsync: [ newCartId := restInterface createCartFor: 'hernan2' password: 'smalltalk'. ]
+		onEndRun: [
+			cartIds add: newCartId.
+			self triggerEvent: #newCartIdArrived
+		]! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 17:44:10' prior: 50690430!
+addToCart
+
+	| cartId bookIsbn |
+
+	(self areCartIdAndBookSelected) ifTrue:[
+		cartId := self selectedCartId.
+		bookIsbn := self selectedBook.
+		
+		self
+			runAsync: [
+				restInterface add: 1 of: bookIsbn toCartIdentifiedAs: cartId.
+			]
+			onEndRun: [
+				self triggerEvent: #bookAddedToCart withArguments: (Array with: bookIsbn with: cartId)
+			]
+	]! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 17:45:35' prior: 50690493!
+addToCart
+
+	| cartId bookIsbn |
+
+	(self areCartIdAndBookSelected) ifTrue:[
+		cartId := self selectedCartId.
+		bookIsbn := self selectedBook.
+		
+		self
+			runAsync: [
+				[ restInterface add: 1 of: bookIsbn toCartIdentifiedAs: cartId. ]
+					on: Error
+					do: [ :anError | self inform: anError messageText ]
+			]
+			onEndRun: [
+				self triggerEvent: #bookAddedToCart withArguments: (Array with: bookIsbn with: cartId)
+			]
+	]! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 17:48:09' prior: 50690482!
+createCart
+
+	| newCartId |
+	
+	self
+		runAsync: [ newCartId := restInterface createCartFor: 'hernan' password: 'smalltalk'. ]
+		onEndRun: [
+			cartIds add: newCartId.
+			self triggerEvent: #newCartIdArrived
+		]! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 17:48:22' prior: 50690508!
+addToCart
+
+	| cartId bookIsbn |
+
+	(self areCartIdAndBookSelected) ifTrue:[
+		cartId := self selectedCartId.
+		bookIsbn := self selectedBook.
+		
+		self
+			runAsync: [
+				[ restInterface add: -1 of: bookIsbn toCartIdentifiedAs: cartId. ]
+					on: Error
+					do: [ :anError | self inform: anError messageText ]
+			]
+			onEndRun: [
+				self triggerEvent: #bookAddedToCart withArguments: (Array with: bookIsbn with: cartId)
+			]
+	]! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 17:49:24' prior: 50690536!
+addToCart
+
+	| cartId bookIsbn |
+
+	(self areCartIdAndBookSelected) ifTrue:[
+		cartId := self selectedCartId.
+		bookIsbn := self selectedBook.
+		
+		self
+			runAsync: [
+				[ restInterface add: -1 of: bookIsbn toCartIdentifiedAs: cartId. ]
+					on: Error
+					do: [ :anError | self error: anError messageText .self inform: anError messageText ]
+			]
+			onEndRun: [
+				self triggerEvent: #bookAddedToCart withArguments: (Array with: bookIsbn with: cartId)
+			]
+	]! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 17:50:21' prior: 50690553!
+addToCart
+
+	| cartId bookIsbn |
+
+	(self areCartIdAndBookSelected) ifTrue:[
+		cartId := self selectedCartId.
+		bookIsbn := self selectedBook.
+		
+		self
+			runAsync: [
+				restInterface add: -1 of: bookIsbn toCartIdentifiedAs: cartId.
+			]
+			onEndRun: [
+				self triggerEvent: #bookAddedToCart withArguments: (Array with: bookIsbn with: cartId)
+			]
+	]! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 17:50:28' prior: 50690571!
+addToCart
+
+	| cartId bookIsbn |
+
+	(self areCartIdAndBookSelected) ifTrue:[
+		cartId := self selectedCartId.
+		bookIsbn := self selectedBook.
+		
+		self
+			runAsync: [
+				restInterface add: 1 of: bookIsbn toCartIdentifiedAs: cartId.
+			]
+			onEndRun: [
+				self triggerEvent: #bookAddedToCart withArguments: (Array with: bookIsbn with: cartId)
+			]
+	]! !
+!TusLibrosClientTestWindow methodsFor: 'initialization' stamp: 'MH 11/11/2023 17:53:17' prior: 50652639!
+initializeWith: aTitle
+
+	self setLabel: aTitle.
+	self model: (TusLibrosClientTestWindowModel new).
+	self morphExtent: (self defaultExtent).
+	self buildMorphicWindow.
+	self openInWorld.
+			
+	self model when: #newCartIdArrived send: #refreshListOfCartIds to: self.		
+	self model when: #selectedCartChanged send: #refreshCartButtonsLabels: to: self.	
+	self model when: #bookAddedToCart send: #informBook:addedToCart: to: self.
+	self model when: #newCurrentSelectedCartContentArrived send: #refreshCurrentSelectedCartContent: to: self.
+	self model when: #errorArrived send: #informError to: self.! !
+!TusLibrosClientTestWindow methodsFor: 'events' stamp: 'MH 11/11/2023 17:55:18'!
+informError: anErrorMessageText
+
+	self inform: anErrorMessageText
+	
+! !
+!TusLibrosClientTestWindow methodsFor: 'initialization' stamp: 'MH 11/11/2023 17:55:34' prior: 50690601!
+initializeWith: aTitle
+
+	self setLabel: aTitle.
+	self model: (TusLibrosClientTestWindowModel new).
+	self morphExtent: (self defaultExtent).
+	self buildMorphicWindow.
+	self openInWorld.
+			
+	self model when: #newCartIdArrived send: #refreshListOfCartIds to: self.		
+	self model when: #selectedCartChanged send: #refreshCartButtonsLabels: to: self.	
+	self model when: #bookAddedToCart send: #informBook:addedToCart: to: self.
+	self model when: #newCurrentSelectedCartContentArrived send: #refreshCurrentSelectedCartContent: to: self.
+	self model when: #errorArrived send: #informError: to: self.! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 17:57:14' prior: 50690586!
+addToCart
+
+	| cartId bookIsbn |
+
+	(self areCartIdAndBookSelected) ifTrue:[
+		cartId := self selectedCartId.
+		bookIsbn := self selectedBook.
+		
+		self
+			runAsync: [
+				[ restInterface add: 1 of: bookIsbn toCartIdentifiedAs: cartId. ]
+					on: Error
+					do: [ :anError |
+						self triggerEvent: #errorArrived withArguments: (Array with: anError messageText)
+					]
+			]
+			onEndRun: [
+				self triggerEvent: #bookAddedToCart withArguments: (Array with: bookIsbn with: cartId)
+			]
+	]! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 17:57:27' prior: 50690652!
+addToCart
+
+	| cartId bookIsbn |
+
+	(self areCartIdAndBookSelected) ifTrue:[
+		cartId := self selectedCartId.
+		bookIsbn := self selectedBook.
+		
+		self
+			runAsync: [
+				[ restInterface add: -1 of: bookIsbn toCartIdentifiedAs: cartId. ]
+					on: Error
+					do: [ :anError |
+						self triggerEvent: #errorArrived withArguments: (Array with: anError messageText)
+					]
+			]
+			onEndRun: [
+				self triggerEvent: #bookAddedToCart withArguments: (Array with: bookIsbn with: cartId)
+			]
+	]! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 17:57:57' prior: 50690671!
+addToCart
+
+	| cartId bookIsbn |
+
+	(self areCartIdAndBookSelected) ifTrue:[
+		cartId := self selectedCartId.
+		bookIsbn := self selectedBook.
+		
+		self
+			runAsync: [
+				[ restInterface add: 1 of: bookIsbn toCartIdentifiedAs: cartId. ]
+					on: Error
+					do: [ :anError |
+						self triggerEvent: #errorArrived withArguments: (Array with: anError messageText)
+					]
+			]
+			onEndRun: [
+				self triggerEvent: #bookAddedToCart withArguments: (Array with: bookIsbn with: cartId)
+			]
+	]! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 17:58:01' prior: 50690690!
+addToCart
+
+	| cartId bookIsbn |
+
+	(self areCartIdAndBookSelected) ifTrue:[
+		cartId := self selectedCartId.
+		bookIsbn := self selectedBook.
+		
+		self
+			runAsync: [
+				[ restInterface add: -1 of: bookIsbn toCartIdentifiedAs: cartId. ]
+					on: Error
+					do: [ :anError |
+						self triggerEvent: #errorArrived withArguments: (Array with: anError messageText)
+					]
+			]
+			onEndRun: [
+				self triggerEvent: #bookAddedToCart withArguments: (Array with: bookIsbn with: cartId)
+			]
+	]! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 17:58:12' prior: 50690709!
+addToCart
+
+	| cartId bookIsbn |
+
+	(self areCartIdAndBookSelected) ifTrue:[
+		cartId := self selectedCartId.
+		bookIsbn := self selectedBook.
+		
+		self
+			runAsync: [
+				[ restInterface add: -1 of: bookIsbn toCartIdentifiedAs: cartId. ]
+					on: Error
+					do: [ :anError |
+						self error: anError.
+						self triggerEvent: #errorArrived withArguments: (Array with: anError messageText)
+					]
+			]
+			onEndRun: [
+				self triggerEvent: #bookAddedToCart withArguments: (Array with: bookIsbn with: cartId)
+			]
+	]! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 17:58:31' prior: 50690728!
+addToCart
+
+	| cartId bookIsbn |
+
+	(self areCartIdAndBookSelected) ifTrue:[
+		cartId := self selectedCartId.
+		bookIsbn := self selectedBook.
+		
+		self
+			runAsync: [
+				[ restInterface add: -1 of: bookIsbn toCartIdentifiedAs: cartId. ]
+					on: Error
+					do: [ :anError |
+						self error: anError messageText.
+						self triggerEvent: #errorArrived withArguments: (Array with: anError messageText)
+					]
+			]
+			onEndRun: [
+				self triggerEvent: #bookAddedToCart withArguments: (Array with: bookIsbn with: cartId)
+			]
+	]! !
+!TusLibrosClientTestWindow methodsFor: 'initialization' stamp: 'MH 11/11/2023 17:59:16' prior: 50690629!
+initializeWith: aTitle
+
+	self setLabel: aTitle.
+	self model: (TusLibrosClientTestWindowModel new).
+	self morphExtent: (self defaultExtent).
+	self buildMorphicWindow.
+	self openInWorld.
+			
+	self model when: #newCartIdArrived send: #refreshListOfCartIds to: self.		
+	self model when: #selectedCartChanged send: #refreshCartButtonsLabels: to: self.	
+	self model when: #bookAddedToCart send: #informBook:addedToCart: to: self.
+	self model when: #newCurrentSelectedCartContentArrived send: #refreshCurrentSelectedCartContent: to: self.
+	self model when: #errorArrived send: #informError: to: self.! !
+!TusLibrosClientTestWindow methodsFor: 'events' stamp: 'MH 11/11/2023 17:59:52' prior: 50690623!
+informError: anErrorMessageText
+
+	self error: 'pepe'.
+	self inform: anErrorMessageText
+	
+! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 18:00:35' prior: 50690748!
+addToCart
+
+	| cartId bookIsbn |
+
+	(self areCartIdAndBookSelected) ifTrue:[
+		cartId := self selectedCartId.
+		bookIsbn := self selectedBook.
+		
+		self
+			runAsync: [
+				[ restInterface add: -1 of: bookIsbn toCartIdentifiedAs: cartId. ]
+					on: Error
+					do: [ :anError |
+						self triggerEvent: #errorArrived withArguments: (Array with: anError messageText)
+					]
+			]
+			onEndRun: [
+				self triggerEvent: #bookAddedToCart withArguments: (Array with: bookIsbn with: cartId)
+			]
+	]! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 18:02:42' prior: 50690797!
+addToCart
+
+	| cartId bookIsbn |
+
+	(self areCartIdAndBookSelected) ifTrue:[
+		cartId := self selectedCartId.
+		bookIsbn := self selectedBook.
+		
+		self
+			runAsync: [
+				[ restInterface add: -1 of: bookIsbn toCartIdentifiedAs: cartId. ]
+					on: Error
+					do: [ :anError |
+						self triggerEvent: #errorArrived withArguments: (Array with: anError)
+					]
+			]
+			onEndRun: [
+				self triggerEvent: #bookAddedToCart withArguments: (Array with: bookIsbn with: cartId)
+			]
+	]! !
+!TusLibrosClientTestWindow methodsFor: 'events' stamp: 'MH 11/11/2023 18:03:11' prior: 50690790!
+informError: anError
+
+	self error: anError messageText
+	"self inform: anErrorMessageText"
+	
+! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 18:05:19' prior: 50690816!
+addToCart
+
+	| cartId bookIsbn |
+
+	(self areCartIdAndBookSelected) ifTrue:[
+		cartId := self selectedCartId.
+		bookIsbn := self selectedBook.
+		
+		self
+			runAsync: [
+				[ restInterface add: -1 of: bookIsbn toCartIdentifiedAs: cartId. ]
+					on: Error
+					do: [ :anError |
+						self triggerEvent: #errorArrived with: anError.
+						"self triggerEvent: #errorArrived withArguments: (Array with: anError)"
+					]
+			]
+			onEndRun: [
+				self triggerEvent: #bookAddedToCart withArguments: (Array with: bookIsbn with: cartId)
+			]
+	]! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 18:05:47' prior: 50690841!
+addToCart
+
+	| cartId bookIsbn |
+
+	(self areCartIdAndBookSelected) ifTrue:[
+		cartId := self selectedCartId.
+		bookIsbn := self selectedBook.
+		
+		self
+			runAsync: [
+				[ restInterface add: -1 of: bookIsbn toCartIdentifiedAs: cartId. ]
+					on: Error
+					do: [ :anError |
+						self triggerEvent: #errorArrivedEEMH with: anError.
+						"self triggerEvent: #errorArrived withArguments: (Array with: anError)"
+					]
+			]
+			onEndRun: [
+				self triggerEvent: #bookAddedToCart withArguments: (Array with: bookIsbn with: cartId)
+			]
+	]! !
+!TusLibrosClientTestWindow methodsFor: 'events' stamp: 'MH 11/11/2023 18:06:04'!
+informErrorEEMH: anError
+
+	self error: anError messageText
+	"self inform: anErrorMessageText"
+	
+! !
+!TusLibrosClientTestWindow methodsFor: 'initialization' stamp: 'MH 11/11/2023 18:06:13' prior: 50690768!
+initializeWith: aTitle
+
+	self setLabel: aTitle.
+	self model: (TusLibrosClientTestWindowModel new).
+	self morphExtent: (self defaultExtent).
+	self buildMorphicWindow.
+	self openInWorld.
+			
+	self model when: #newCartIdArrived send: #refreshListOfCartIds to: self.		
+	self model when: #selectedCartChanged send: #refreshCartButtonsLabels: to: self.	
+	self model when: #bookAddedToCart send: #informBook:addedToCart: to: self.
+	self model when: #newCurrentSelectedCartContentArrived send: #refreshCurrentSelectedCartContent: to: self.
+	self model when: #errorArrivedEEMH send: #informErrorEEMH: to: self.! !
+
+TusLibrosClientTestWindow open!
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 18:06:56' prior: 50690862!
+addToCart
+
+	| cartId bookIsbn |
+
+	(self areCartIdAndBookSelected) ifTrue:[
+		cartId := self selectedCartId.
+		bookIsbn := self selectedBook.
+		
+		self
+			runAsync: [
+				[ restInterface add: -1 of: bookIsbn toCartIdentifiedAs: cartId. ]
+					on: Error
+					do: [ :anError |
+						self triggerEvent: #errorArrivedEEMH with: anError
+					]
+			]
+			onEndRun: [
+				self triggerEvent: #bookAddedToCart withArguments: (Array with: bookIsbn with: cartId)
+			]
+	]! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 18:07:10' prior: 50690913!
+addToCart
+
+	| cartId bookIsbn |
+
+	(self areCartIdAndBookSelected) ifTrue:[
+		cartId := self selectedCartId.
+		bookIsbn := self selectedBook.
+		
+		self
+			runAsync: [
+				[ restInterface add: -1 of: bookIsbn toCartIdentifiedAs: cartId. ]
+					on: Error
+					do: [ :anError |
+						self triggerEvent: #errorArrived with: anError
+					]
+			]
+			onEndRun: [
+				self triggerEvent: #bookAddedToCart withArguments: (Array with: bookIsbn with: cartId)
+			]
+	]! !
+
+!methodRemoval: TusLibrosClientTestWindow #informErrorEEMH: stamp: 'MH 11/11/2023 18:07:17'!
+informErrorEEMH: anError
+
+	self error: anError messageText
+	"self inform: anErrorMessageText"
+	
+!
+!TusLibrosClientTestWindow methodsFor: 'events' stamp: 'MH 11/11/2023 18:07:30' prior: 50690834!
+informError: anError
+
+	self inform: anError messageText! !
+!TusLibrosClientTestWindow methodsFor: 'initialization' stamp: 'MH 11/11/2023 18:07:39' prior: 50690889!
+initializeWith: aTitle
+
+	self setLabel: aTitle.
+	self model: (TusLibrosClientTestWindowModel new).
+	self morphExtent: (self defaultExtent).
+	self buildMorphicWindow.
+	self openInWorld.
+			
+	self model when: #newCartIdArrived send: #refreshListOfCartIds to: self.		
+	self model when: #selectedCartChanged send: #refreshCartButtonsLabels: to: self.	
+	self model when: #bookAddedToCart send: #informBook:addedToCart: to: self.
+	self model when: #newCurrentSelectedCartContentArrived send: #refreshCurrentSelectedCartContent: to: self.
+	self model when: #errorArrived send: #informError: to: self.! !
+
+TusLibrosClientTestWindow open!
+!TusLibrosClientTestWindow methodsFor: 'events' stamp: 'MH 11/11/2023 18:08:35' prior: 50690955!
+informError: anError
+
+	self error: 'pepe'.
+	self inform: anError messageText! !
+
+TusLibrosClientTestWindow open!
+
+WebServer reset!
+
+TusLibrosServerRestInterface installForDefaultSystem!
+
+TusLibrosClientTestWindow open!
+!TusLibrosServerRestInterface methodsFor: 'rest interface' stamp: 'MH 11/11/2023 18:11:24' prior: 50652978!
+addToCart: aRequest
+
+	| bookIsbn cartId quantity |
+
+	"(Delay forSeconds: 3) wait."
+	
+	self withFieldsOf: aRequest do: [ :requestFields |
+		cartId := self cartIdFrom: requestFields.
+		bookIsbn := self bookIsbnFrom: requestFields.
+		quantity := self bookQuantityFrom: requestFields].
+		
+	self 
+		answer: [
+			systemFacade add: quantity of: bookIsbn toCartIdentifiedAs: cartId.
+			'OK' ]
+		to: aRequest 
+	! !
+!TusLibrosClientTestWindow methodsFor: 'events' stamp: 'MH 11/11/2023 18:12:15' prior: 50690984!
+informError: anError
+
+	"self error: 'pepe'."
+	self inform: (anError messageText).! !
+
+TusLibrosClientTestWindow open!
+!TusLibrosClientTestWindow methodsFor: 'events' stamp: 'MH 11/11/2023 18:13:07' prior: 50691011!
+informError: anError
+
+	self inform: (anError messageText).
+	self error: 'pepe'.! !
+
+TusLibrosClientTestWindow open!
+!TusLibrosClientTestWindow methodsFor: 'events' stamp: 'MH 11/11/2023 18:13:40' prior: 50691018!
+informError: anError
+
+	self inform: (anError messageText).! !
+
+TusLibrosClientTestWindow open!
+
+WebServer reset!
+
+installForDefaultSystem!
+
+TusLibrosClientTestWindow open!
+
+TusLibrosServerRestInterface installForDefaultSystem!
+
+TusLibrosClientTestWindow open!
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 18:16:05' prior: 50690931!
+addToCart
+
+	| cartId bookIsbn |
+
+	(self areCartIdAndBookSelected) ifTrue:[
+		cartId := self selectedCartId.
+		bookIsbn := self selectedBook.
+		
+		self
+			runAsync: [
+				[ restInterface add: 1 of: bookIsbn toCartIdentifiedAs: cartId. ]
+					on: Error
+					do: [ :anError |
+						self triggerEvent: #errorArrived with: anError
+					]
+			]
+			onEndRun: [
+				self triggerEvent: #bookAddedToCart withArguments: (Array with: bookIsbn with: cartId)
+			]
+	]! !
+!TusLibrosServerRestInterface methodsFor: 'rest interface' stamp: 'MH 11/11/2023 18:16:16' prior: 50690995!
+addToCart: aRequest
+
+	| bookIsbn cartId quantity |
+
+	(Delay forSeconds: 3) wait.
+	
+	self withFieldsOf: aRequest do: [ :requestFields |
+		cartId := self cartIdFrom: requestFields.
+		bookIsbn := self bookIsbnFrom: requestFields.
+		quantity := self bookQuantityFrom: requestFields].
+		
+	self 
+		answer: [
+			systemFacade add: quantity of: bookIsbn toCartIdentifiedAs: cartId.
+			'OK' ]
+		to: aRequest 
+	! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 18:16:46' prior: 50690525!
+createCart
+
+	| newCartId |
+	
+	self
+		runAsync: [
+			[ newCartId := restInterface createCartFor: 'hernan' password: 'smalltalk'. ]
+				on: Error
+				do: [ :anError |
+					self triggerEvent: #errorArrived with: anError
+				]
+		]
+		onEndRun: [
+			cartIds add: newCartId.
+			self triggerEvent: #newCartIdArrived
+		]! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 18:17:06' prior: 50690445!
+listCart
+
+	| cartId |
+	
+	(self isCartIdSelected) ifTrue:[
+		cartId := self selectedCartId.
+		
+		self
+			runAsync: [
+				[ currentSelectedCartContent := restInterface listCart: cartId. ]
+					on: Error
+					do: [ :anError |
+						self triggerEvent: #errorArrived with: anError
+					]
+			]
+			onEndRun: [
+				self triggerEvent: #newCurrentSelectedCartContentArrived with: cartId
+			]
+	].! !
+
+WebServer reset!
+
+TusLibrosServerRestInterface installForDefaultSystem!
+
+TusLibrosClientTestWindow open!
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 18:18:50' prior: 50691072!
+createCart
+
+	| newCartId |
+	
+	self
+		runAsync: [
+			[ newCartId := restInterface createCartFor: 'hernan' password: 'smalltalk'. ]
+				on: Error
+				do: [ :anError |
+					self triggerEvent: #errorArrived with: anError messageText
+				]
+		]
+		onEndRun: [
+			cartIds add: newCartId.
+			self triggerEvent: #newCartIdArrived
+		]! !
+!TusLibrosClientTestWindow methodsFor: 'events' stamp: 'MH 11/11/2023 18:19:05' prior: 50691025!
+informError: anError
+
+	self inform: anError! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 18:19:13' prior: 50691105!
+createCart
+
+	| newCartId |
+	
+	self
+		runAsync: [
+			[ newCartId := restInterface createCartFor: 'hernan1' password: 'smalltalk'. ]
+				on: Error
+				do: [ :anError |
+					self triggerEvent: #errorArrived with: anError messageText
+				]
+		]
+		onEndRun: [
+			cartIds add: newCartId.
+			self triggerEvent: #newCartIdArrived
+		]! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 18:19:26' prior: 50691124!
+createCart
+
+	| newCartId |
+	
+	self
+		runAsync: [
+			[ newCartId := restInterface createCartFor: 'hernan1' password: 'smalltalk'. ]
+				on: Error
+				do: [ :anError |
+					self triggerEvent: #errorArrived with: anError
+				]
+		]
+		onEndRun: [
+			cartIds add: newCartId.
+			self triggerEvent: #newCartIdArrived
+		]! !
+!TusLibrosClientTestWindow methodsFor: 'events' stamp: 'MH 11/11/2023 18:19:37' prior: 50691119!
+informError: anError
+
+	self inform: anError messageText ! !
+!TusLibrosClientTestWindow methodsFor: 'events' stamp: 'MH 11/11/2023 18:19:55' prior: 50691151!
+informError: anError
+
+	self inform: anError messageText! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 18:20:05' prior: 50691138!
+createCart
+
+	| newCartId |
+	
+	self
+		runAsync: [
+			[ newCartId := restInterface createCartFor: 'hernan' password: 'smalltalk'. ]
+				on: Error
+				do: [ :anError |
+					self triggerEvent: #errorArrived with: anError
+				]
+		]
+		onEndRun: [
+			cartIds add: newCartId.
+			self triggerEvent: #newCartIdArrived
+		]! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 18:20:28' prior: 50691037!
+addToCart
+
+	| cartId bookIsbn |
+
+	(self areCartIdAndBookSelected) ifTrue:[
+		cartId := self selectedCartId.
+		bookIsbn := self selectedBook.
+		
+		self
+			runAsync: [
+				[ restInterface add: -1 of: bookIsbn toCartIdentifiedAs: cartId. ]
+					on: Error
+					do: [ :anError |
+						self triggerEvent: #errorArrived with: anError
+					]
+			]
+			onEndRun: [
+				self triggerEvent: #bookAddedToCart withArguments: (Array with: bookIsbn with: cartId)
+			]
+	]! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 18:21:31' prior: 50691176!
+addToCart
+
+	| cartId bookIsbn |
+
+	(self areCartIdAndBookSelected) ifTrue:[
+		cartId := self selectedCartId.
+		bookIsbn := self selectedBook.
+		
+		self
+			runAsync: [
+				[ restInterface add: 1 of: bookIsbn toCartIdentifiedAs: cartId. ]
+					on: Error
+					do: [ :anError |
+						self triggerEvent: #errorArrived with: anError
+					]
+			]
+			onEndRun: [
+				self triggerEvent: #bookAddedToCart withArguments: (Array with: bookIsbn with: cartId)
+			]
+	]! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 18:21:35' prior: 50691194!
+addToCart
+
+	| cartId bookIsbn |
+
+	(self areCartIdAndBookSelected) ifTrue:[
+		cartId := self selectedCartId.
+		bookIsbn := self selectedBook.
+		
+		self
+			runAsync: [
+				[ restInterface add: 1 of: bookIsbn toCartIdentifiedAs: 5. ]
+					on: Error
+					do: [ :anError |
+						self triggerEvent: #errorArrived with: anError
+					]
+			]
+			onEndRun: [
+				self triggerEvent: #bookAddedToCart withArguments: (Array with: bookIsbn with: cartId)
+			]
+	]! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 18:22:12' prior: 50691212!
+addToCart
+
+	| cartId bookIsbn |
+
+	(self areCartIdAndBookSelected) ifTrue:[
+		cartId := self selectedCartId.
+		bookIsbn := self selectedBook.
+		
+		self
+			runAsync: [
+				[ restInterface add: 1 of: bookIsbn toCartIdentifiedAs: cartId. ]
+					on: Error
+					do: [ :anError |
+						self triggerEvent: #errorArrived with: anError
+					]
+			]
+			onEndRun: [
+				self triggerEvent: #bookAddedToCart withArguments: (Array with: bookIsbn with: cartId)
+			]
+	]! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 18:22:21' prior: 50691086!
+listCart
+
+	| cartId |
+	
+	(self isCartIdSelected) ifTrue:[
+		cartId := self selectedCartId.
+		
+		self
+			runAsync: [
+				[ currentSelectedCartContent := restInterface listCart: 8. ]
+					on: Error
+					do: [ :anError |
+						self triggerEvent: #errorArrived with: anError
+					]
+			]
+			onEndRun: [
+				self triggerEvent: #newCurrentSelectedCartContentArrived with: cartId
+			]
+	].! !
+!TusLibrosServerRestInterface methodsFor: 'rest interface' stamp: 'MH 11/11/2023 18:22:35' prior: 50653038!
+listCart: aRequest
+
+	| cartId |
+
+	"(Delay forSeconds: 10) wait."
+	
+	self withFieldsOf: aRequest do: [ :requestFields |
+		cartId := self cartIdFrom: requestFields ].
+	
+	self 
+		answer: [(systemFacade listCartIdentifiedAs: cartId) asArray]
+		to: aRequest 
+! !
+!TusLibrosServerRestInterface methodsFor: 'rest interface' stamp: 'MH 11/11/2023 18:22:54' prior: 50691264!
+listCart: aRequest
+
+	| cartId |
+
+	(Delay forSeconds: 10) wait.
+	
+	self withFieldsOf: aRequest do: [ :requestFields |
+		cartId := self cartIdFrom: requestFields ].
+	
+	self 
+		answer: [(systemFacade listCartIdentifiedAs: cartId) asArray]
+		to: aRequest 
+! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'MH 11/11/2023 18:23:58' prior: 50691248!
+listCart
+
+	| cartId |
+	
+	(self isCartIdSelected) ifTrue:[
+		cartId := self selectedCartId.
+		
+		self
+			runAsync: [
+				[ currentSelectedCartContent := restInterface listCart: cartId. ]
+					on: Error
+					do: [ :anError |
+						self triggerEvent: #errorArrived with: anError
+					]
+			]
+			onEndRun: [
+				self triggerEvent: #newCurrentSelectedCartContentArrived with: cartId
+			]
+	].! !
+
+----SNAPSHOT----(11 November 2023 18:27:56) CuisUniversity-5981.image priorSource: 11480053!
+
+----QUIT----(11 November 2023 18:29:24) CuisUniversity-5981.image priorSource: 11508868!
+
+----STARTUP---- (11 November 2023 18:34:56) as /home/eitancho/Documentos/Compu/isw1-entregas/09-TusLibros/Iteracion4/CuisUniversity-5981.image!
+
+
+TusLibrosClientTestWindow open!
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'e 11/11/2023 18:38:19' prior: 50691230!
+addToCart
+
+	| cartId bookIsbn |
+
+	(self areCartIdAndBookSelected) ifTrue:[
+		cartId := self selectedCartId.
+		bookIsbn := self selectedBook.
+		
+		self
+			runAsync: [
+				[ restInterface add: 1 of: bookIsbn toCartIdentifiedAs: 20. ]
+					on: Error
+					do: [ :anError |
+						self triggerEvent: #errorArrived with: anError
+					]
+			]
+			onEndRun: [
+				self triggerEvent: #bookAddedToCart withArguments: (Array with: bookIsbn with: cartId)
+			]
+	]! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'e 11/11/2023 18:39:01' prior: 50691315!
+addToCart
+
+	| cartId bookIsbn |
+
+	(self areCartIdAndBookSelected) ifTrue:[
+		cartId := self selectedCartId.
+		bookIsbn := self selectedBook.
+		
+		self
+			runAsync: [
+				[ restInterface add: 1 of: bookIsbn toCartIdentifiedAs: cartId . ]
+					on: Error
+					do: [ :anError |
+						self triggerEvent: #errorArrived with: anError
+					]
+			]
+			onEndRun: [
+				self triggerEvent: #bookAddedToCart withArguments: (Array with: bookIsbn with: cartId)
+			]
+	]! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'e 11/11/2023 18:39:23' prior: 50691162!
+createCart
+
+	| newCartId |
+	
+	self
+		runAsync: [
+			[ newCartId := restInterface createCartFor: 'hernan1' password: 'smalltalk'. ]
+				on: Error
+				do: [ :anError |
+					self triggerEvent: #errorArrived with: anError
+				]
+		]
+		onEndRun: [
+			cartIds add: newCartId.
+			self triggerEvent: #newCartIdArrived
+		]! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'e 11/11/2023 18:40:21' prior: 50691351!
+createCart
+
+	| newCartId |
+	
+	self
+		runAsync: [
+			[ newCartId := restInterface createCartFor: 'hernan1' password: 'smalltalk'. ]
+				on: Error
+				do: [ :anError |
+					^self triggerEvent: #errorArrived with: anError
+				]
+		]
+		onEndRun: [
+			cartIds add: newCartId.
+			self triggerEvent: #newCartIdArrived
+		]! !
+
+TusLibrosClientTestWindow open!
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'e 11/11/2023 18:40:49' prior: 50691365!
+createCart
+
+	| newCartId |
+	
+	self
+		runAsync: [
+			[ newCartId := restInterface createCartFor: 'hernan1' password: 'smalltalk'. ]
+				on: Error
+				do: [ :anError |
+					self triggerEvent: #errorArrived with: anError
+				]
+		]
+		onEndRun: [
+			cartIds add: newCartId.
+			self triggerEvent: #newCartIdArrived
+		]! !
+!TusLibrosClientTestWindowModel methodsFor: 'buttonSelectors' stamp: 'e 11/11/2023 18:41:46' prior: 50691380!
+createCart
+
+	| newCartId |
+	
+	self
+		runAsync: [
+			[ newCartId := restInterface createCartFor: 'hernan1' password: 'smalltalk'. ]
+				on: Error
+				do: [ :anError |
+					self triggerEvent: #errorArrived with: anError
+				]
+		]
+		onEndRun: [
+			cartIds add: newCartId.
+			self triggerEvent: #newCartIdArrived
+		]! !
